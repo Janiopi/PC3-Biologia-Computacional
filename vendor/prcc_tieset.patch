@@ -1,0 +1,2 @@
+569a570
+> 		  for(i=0; i<nsim; i++) LHSMatrix[k][i].tieset = 0; /* PARCHE */

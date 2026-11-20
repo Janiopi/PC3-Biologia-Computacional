@@ -1,0 +1,140 @@
+AVANCE DEL LABORATORIO - BIOLOGÍA COMPUTACIONAL
+Análisis de sensibilidad LHS/PRCC de un modelo dinámico
+
+Nombre: ______________________________     Fecha: 18/11/2026
+
+======================================================================
+1. PROBLEMA ELEGIDO
+======================================================================
+Transmisión del dengue en una población humana con vector (mosquito
+Aedes aegypti), con una medida de control sobre el vector (fumigación o
+reducción de criaderos).
+
+Motivación: el dengue es un problema de salud pública recurrente en el
+Perú, hay abundante literatura para justificar los parámetros y el
+modelo tiene bucles de realimentación claros (humano -> mosquito ->
+humano), adecuados para el modelo causal.
+
+Modelo base: tipo SEIR (humanos) - SEI (mosquitos), siguiendo la
+formulación clásica de Esteva y Vargas (1998), que a su vez deriva del
+modelo SIR de Kermack y McKendrick (1927).
+
+======================================================================
+2. METODOLOGÍA PLANEADA
+======================================================================
+Se seguirá la estructura de modelado de la conferencia recomendada por
+el docente (Delgado, 2018, "Dinámica de sistemas aplicada en la
+epidemiología"):
+
+  1) Conjunto básico de variables (niveles, flujos, auxiliares y tasas).
+  2) Tabla de relaciones y diagrama causal (signos + / -, bucles
+     reforzadores y compensadores).
+  3) Explicación textual del modelo.
+  4) Modelo dinámico (diagrama de Forrester).
+  5) Sistema de ecuaciones diferenciales, con valores iniciales de los
+     niveles y parámetros con rangos (mínimo - máximo).
+  6) Simulación y análisis de variabilidad de parámetros.
+
+Herramientas:
+  - Software del curso (teval1 / crun / prcc) como herramienta
+    principal: resolución de las EDOs con Runge-Kutta de 4º orden,
+    muestreo LHS y cálculo de PRCC.
+  - Python (scipy, numpy, matplotlib) como verificación independiente
+    de los resultados del software del curso.
+  - Entorno empaquetado en Docker para que sea reproducible en Windows 11
+    (pendiente de verificar en mi equipo).
+
+======================================================================
+3. MODELO PROPUESTO (PRELIMINAR)
+======================================================================
+Variables de nivel (8):
+  Humanos:    Sh (susceptibles), Eh (expuestos), Ih (infectados),
+              Rh (recuperados)
+  Mosquitos:  Sv (susceptibles), Ev (expuestos), Iv (infecciosos)
+  Auxiliar acumulada: Ch (casos acumulados, para el tamaño final de
+              la epidemia)
+
+Ecuaciones (Nh = población humana total, constante):
+  Sh' = mu_h*Nh - b*beta_h*Iv*Sh/Nh - mu_h*Sh
+  Eh' = b*beta_h*Iv*Sh/Nh - (sigma_h + mu_h)*Eh
+  Ih' = sigma_h*Eh - (gamma_h + mu_h)*Ih
+  Rh' = gamma_h*Ih - mu_h*Rh
+  Sv' = mu_v*m*Nh - b*beta_v*Ih*Sv/Nh - (mu_v + u)*Sv
+  Ev' = b*beta_v*Ih*Sv/Nh - (sigma_v + mu_v + u)*Ev
+  Iv' = sigma_v*Ev - (mu_v + u)*Iv
+  Ch' = sigma_h*Eh
+
+Valores iniciales (preliminares): Nh = 10 000; Ih(0) = 10; Eh(0) = 0;
+Rh(0) = 0; Sh(0) = 9 990; mosquitos: Sv(0) = m*Nh, Ev(0) = Iv(0) = 0;
+Ch(0) = 0. Horizonte: 300 días.
+
+Parámetros a variar con LHS (rangos PRELIMINARES, por justificar con
+referencias bibliográficas antes de la entrega final):
+  b        tasa de picadura por mosquito (1/día)        0.2  - 1.0
+  beta_h   prob. de transmisión mosquito -> humano      0.1  - 0.75
+  beta_v   prob. de transmisión humano -> mosquito      0.1  - 0.75
+  sigma_h  1/periodo de incubación intrínseco (1/día)   1/7  - 1/4
+  gamma_h  1/periodo infeccioso humano (1/día)          1/7  - 1/3
+  sigma_v  1/incubación extrínseca en mosquito (1/día)  1/14 - 1/6
+  mu_v     mortalidad del mosquito (1/día)              1/21 - 1/7
+  m        mosquitos por humano                         0.5  - 3
+  u        mortalidad adicional por control vectorial   0    - 0.1
+Parámetros fijos: mu_h (mortalidad humana natural, 1/(70*365) por día),
+Nh.
+
+Número reproductivo básico (se calculará como referencia):
+  R0 = sqrt( b^2*beta_h*beta_v*m*sigma_h*sigma_v /
+             [(gamma_h+mu_h)*(sigma_h+mu_h)*(mu_v+u)*(sigma_v+mu_v+u)] )
+
+======================================================================
+4. ANÁLISIS DE SENSIBILIDAD
+======================================================================
+  - Muestreo LHS de los 9 parámetros con distribución uniforme en sus
+    rangos (del orden de 500 a 1000 muestras).
+  - Variables de salida (outcomes): infectados humanos Ih(t),
+    mosquitos infecciosos Iv(t) y casos acumulados Ch(t) (tamaño final
+    de la epidemia).
+  - PRCC de cada parámetro frente a cada outcome a lo largo del
+    tiempo, con su p-valor (significancia estadística).
+  - Gráficas: PRCC vs. tiempo por outcome y barras de PRCC al final
+    del horizonte. Interpretación biológica: qué parámetros dominan
+    (hipótesis a verificar: mortalidad del mosquito, tasa de picadura
+    y probabilidades de transmisión) y qué implica para el control.
+
+======================================================================
+5. ESTADO ACTUAL
+======================================================================
+  [HECHO]
+  - Revisión del software del curso (teval1, crun, prcc): se entendió
+    el formato de modelos, la sintaxis de rangos de parámetros ($U) y
+    el formato de salida del PRCC.
+  - Flujo completo (modelo -> LHS -> PRCC) probado con un modelo SIR de
+    3 parámetros; los resultados son coherentes (p. ej., PRCC de beta
+    positivo y de gamma negativo sobre los infectados).
+  - Lectura de la conferencia recomendada y definición de la estructura
+    del informe a partir de ella.
+  - Selección del problema y planteamiento preliminar del modelo.
+
+  [PENDIENTE]
+  - Diagrama causal y diagrama de Forrester del dengue.
+  - Justificación bibliográfica de los rangos de parámetros.
+  - Implementación del modelo de dengue en el formato del software del
+    curso y simulación.
+  - Corrida LHS/PRCC y gráficas de resultados.
+  - Verificación cruzada en Python.
+  - Informe final: modelo causal y dinámico, ecuaciones, parámetros y
+    valores iniciales, resultados de LHS/PRCC e interpretación.
+
+======================================================================
+REFERENCIAS
+======================================================================
+  - Delgado, J. A. (2018). Dinámica de sistemas aplicada en la
+    epidemiología. Seminario Permanente "Las matemáticas en la lucha
+    contra las epidemias", Facultad de CC. Matemáticas, UCM.
+  - Esteva, L. y Vargas, C. (1998). Analysis of a dengue disease
+    transmission model. Mathematical Biosciences, 150, 131-151.
+  - Kermack, W. O. y McKendrick, A. G. (1927). A contribution to the
+    mathematical theory of epidemics. Proc. R. Soc. Lond. A, 115, 700-721.
+  - Marino, S., Hogue, I. B., Ray, C. J. y Kirschner, D. E. (2008). A
+    methodology for performing global uncertainty and sensitivity
+    analysis in systems biology. J. Theor. Biol., 254, 178-196.

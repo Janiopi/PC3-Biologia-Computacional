@@ -1,0 +1,64 @@
+// =====================================================================
+// Dengue humano-mosquito (SEIR-SEI) con control vectorial
+// Humanos: fracciones de la poblacion (sh+eh+ih+rh = 1)
+// Mosquitos: fracciones de la poblacion basal (svr, evr, ivr; empiezan en 1)
+// Unidades de tiempo: dias
+// =====================================================================
+
+$Initial_conditions
+
+// ---- Niveles humanos
+sh  = 0.999;     // susceptibles
+eh  = 0.0;       // expuestos (incubacion intrinseca)
+ih  = 0.001;     // infecciosos (10 de cada 10 000)
+rh  = 0.0;       // recuperados
+ch  = 0.0;       // incidencia acumulada (fraccion que se volvio infecciosa)
+
+// ---- Niveles mosquito (relativos a la poblacion basal)
+svr = 1.0;       // susceptibles
+evr = 0.0;       // expuestos (incubacion extrinseca)
+ivr = 0.0;       // infecciosos
+
+// ---- Parametros con rango LHS:  nombre = nominal min min max $U;
+b       = 0.6      0.3      0.3      1.0      $U;   // picaduras por mosquito por dia
+beta_h  = 0.5      0.2      0.2      0.75     $U;   // prob. transmision mosquito -> humano
+beta_v  = 0.5      0.2      0.2      0.75     $U;   // prob. transmision humano -> mosquito
+sigma_h = 0.1667   0.1429   0.1429   0.25     $U;   // 1/incubacion intrinseca (1/dia)
+gamma_h = 0.2      0.1429   0.1429   0.3333   $U;   // 1/periodo infeccioso humano (1/dia)
+sigma_v = 0.1      0.0714   0.0714   0.1667   $U;   // 1/incubacion extrinseca (1/dia)
+mu_v    = 0.0714   0.0476   0.0476   0.1429   $U;   // mortalidad natural del mosquito (1/dia)
+m       = 2.5      1.0      1.0      4.0      $U;   // mosquitos por humano
+u       = 0.02     0.0      0.0      0.05     $U;   // mortalidad extra por control vectorial (1/dia)
+
+$Equations
+
+// ---- Constante fija
+mu_h = 0.0000391;          // mortalidad/natalidad humana = 1/(70*365)
+
+// ---- Auxiliares
+lam_h = b*beta_h*m*ivr;    // fuerza de infeccion sobre humanos susceptibles
+lam_v = b*beta_v*ih;       // fuerza de infeccion sobre mosquitos susceptibles
+R0 = sqrt( (b*b*beta_h*beta_v*m*sigma_h*sigma_v) /
+     ((gamma_h+mu_h)*(sigma_h+mu_h)*(mu_v+u)*(sigma_v+mu_v+u)) );
+
+// ---- Humanos
+sh' = mu_h - lam_h*sh - mu_h*sh;
+eh' = lam_h*sh - (sigma_h+mu_h)*eh;
+ih' = sigma_h*eh - (gamma_h+mu_h)*ih;
+rh' = gamma_h*ih - mu_h*rh;
+ch' = sigma_h*eh;
+
+// ---- Mosquitos
+svr' = mu_v - lam_v*svr - (mu_v+u)*svr;
+evr' = lam_v*svr - (sigma_v+mu_v+u)*evr;
+ivr' = sigma_v*evr - (mu_v+u)*ivr;
+
+$StartTime 0
+$StopTime  365
+$timestep  0.05
+$timefigs  5
+$plot ih ivr ch R0;
+
+$Method $Rk4
+$lhs 999 b beta_h beta_v sigma_h gamma_h sigma_v mu_v m u;
+$seed 20261118

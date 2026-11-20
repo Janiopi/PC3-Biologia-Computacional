@@ -1,0 +1,77 @@
+#!/bin/bash
+# lhsrun - Flujo completo con el software del curso (teval1 + gcc + prcc + gnuplot)
+#
+# Uso:   lhsrun modelo.txt [N]
+#   modelo.txt : modelo en formato crun ($Initial_conditions, $Equations, ..., $lhs)
+#   N          : (opcional) prcc calcula el PRCC cada N filas de tiempo (default 3;
+#                menor N = mas puntos en el tiempo pero mas memoria). Si prcc falla,
+#                el script reintenta solo con N mayores.
+#
+# Crea la carpeta out_<modelo>/ con: trayectorias (0001, 0002, ...), archivos lhs*,
+# prcc.NNNN, figuras .ps y .pdf.
+#
+# Variables de entorno opcionales:
+#   DIRSRC  carpeta src/ del software  (default /usr/local/intode/src)
+#   TEVAL   ruta de teval1             (default: el que haya en el PATH)
+#   PRCC    ruta de prcc               (default: prcc_fix si existe, si no prcc)
+
+set -u
+MODEL="${1:-}"
+NSKIP="${2:-3}"
+DIRSRC="${DIRSRC:-/usr/local/intode/src}"
+TEVAL="${TEVAL:-teval1}"
+# por defecto se usa prcc_fix (prcc del profesor + reinicio de empates) si existe; PRCC=prcc fuerza el original
+PRCC="${PRCC:-$(command -v prcc_fix || echo prcc)}"
+
+if [ -z "$MODEL" ] || [ ! -f "$MODEL" ]; then
+  echo "Uso: lhsrun modelo.txt [N]"; exit 1
+fi
+
+BASE="$(basename "$MODEL" .txt)"
+OUT="out_${BASE}"
+mkdir -p "$OUT"
+cp "$MODEL" "$OUT/"
+cd "$OUT" || exit 1
+rm -f temp1.c run1
+
+echo "[1/4] Traduciendo el modelo a C (teval1)..."
+if ! "$TEVAL" < "$BASE.txt"; then
+  echo "ERROR: teval1 no pudo leer el modelo. Revisa la sintaxis (punto y coma, \$, comillas)."; exit 1
+fi
+[ -f temp1.c ] || { echo "ERROR: no se generó temp1.c"; exit 1; }
+
+echo "[2/4] Compilando con gcc (misma lista de fuentes que crun)..."
+gcc -I"$DIRSRC" ./temp1.c \
+  "$DIRSRC"/my_rkck.c "$DIRSRC"/my_rkqs.c "$DIRSRC"/my_odeint.c "$DIRSRC"/nrutil.c \
+  "$DIRSRC"/my_rk4.c "$DIRSRC"/my_mmid.c \
+  "$DIRSRC"/my_pzextr.c "$DIRSRC"/my_rzextr.c "$DIRSRC"/my_lubksb.c "$DIRSRC"/my_ludcmp.c \
+  "$DIRSRC"/my_stiff.c "$DIRSRC"/my_jacobn.c "$DIRSRC"/my_simpr.c "$DIRSRC"/my_stifbs.c \
+  "$DIRSRC"/plots.c -o ./run1 -lm -O2 2> compile.log \
+  || { echo "ERROR de compilación (ver $OUT/compile.log)"; tail -20 compile.log; exit 1; }
+
+echo "[3/4] Resolviendo las EDOs (y las corridas LHS si hay \$lhs)..."
+./run1 | tail -3 || { echo "ERROR al ejecutar. Revisa timestep, ecuaciones o parámetros."; exit 1; }
+
+if [ -f lhsdata ] && [ -f lhsmatrix ]; then
+  echo "[4/4] Calculando PRCC con: $PRCC"
+  OKPRCC=0
+  # prcc guarda sus matrices en la pila: se quita el limite de pila y, si aun asi falla, se sube N
+  ulimit -s unlimited 2>/dev/null || ulimit -s "$(ulimit -H -s)" 2>/dev/null
+  for n in "$NSKIP" 5 10 20; do
+    rm -f prcc.0*
+    if "$PRCC" "$n" > prcc.log 2>&1; then OKPRCC=1; echo "      prcc $n: OK"; break
+    else echo "      prcc $n: falló, probando un N mayor..."; fi
+  done
+  [ "$OKPRCC" = 1 ] || echo "AVISO: prcc no pudo completarse (revisa que haya >=2 parámetros en \$lhs)."
+else
+  echo "[4/4] El modelo no tiene \$lhs: se omite PRCC."
+fi
+
+# Postscript -> PDF (si hay ghostscript)
+if command -v ps2pdf >/dev/null 2>&1; then
+  for f in *.ps; do [ -f "$f" ] && ps2pdf "$f" "${f%.ps}.pdf" 2>/dev/null; done
+fi
+
+echo
+echo "Listo. Resultados en: $(pwd)"
+ls *.pdf *.ps 2>/dev/null | sed 's/^/  /'

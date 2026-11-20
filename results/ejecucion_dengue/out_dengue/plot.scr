@@ -1,0 +1,15 @@
+set terminal pdf 
+ set output "output1.pdf"
+load 'legend.gp' 
+set pointsize 0.500000
+set xlabel 'Time(Units)'
+set title "ih"
+load '0001.gp' 
+set title "ivr"
+load '0002.gp' 
+set title "ch"
+load '0003.gp' 
+set title "R0"
+load '0004.gp' 
+print 'File output1.pdf created!' 
+exit

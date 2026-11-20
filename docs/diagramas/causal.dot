@@ -1,0 +1,22 @@
+digraph causal {
+ graph [label="Dengue: relaciones causales (signos a igualdad de las demás variables)", labelloc=t];
+ node [shape=box];
+ ih [label="Humanos infecciosos"];
+ ev [label="Mosquitos expuestos"];
+ iv [label="Mosquitos infecciosos"];
+ eh [label="Humanos expuestos"];
+ s [label="Humanos susceptibles"];
+ f [label="Nuevas infecciones humanas"];
+ u [label="Control u (externo constante)"];
+ d [label="Mortalidad vectorial"];
+ ih -> ev [label="+ infección"];
+ ev -> iv [label="+ incubación (retraso)"];
+ iv -> f [label="+"];
+ s -> f [label="+"];
+ f -> eh [label="+"];
+ eh -> ih [label="+ incubación (retraso)"];
+ f -> s [label="− agotamiento: balance"];
+ u -> d [label="+"];
+ d -> iv [label="−"];
+ ih -> ih [label="− recuperación y muerte"];
+}

@@ -1,0 +1,23 @@
+digraph flujos {
+ rankdir=LR;
+ node [shape=box];
+ nacimiento [shape=plaintext]; reclutamiento [shape=plaintext]; muerte_h [shape=plaintext]; muerte_v [shape=plaintext];
+ nacimiento -> sh [label="mu_h"];
+ sh -> eh [label="lambda_h sh"];
+ eh -> ih [label="sigma_h eh"];
+ ih -> rh [label="gamma_h ih"];
+ eh -> ch [style=dashed,label="información: acumular sigma_h eh"];
+ ch [label="ch: integral de sigma_h eh"];
+ sh -> muerte_h [label="mu_h sh"];
+ eh -> muerte_h [label="mu_h eh"];
+ ih -> muerte_h [label="mu_h ih"];
+ rh -> muerte_h [label="mu_h rh"];
+ reclutamiento -> svr [label="mu_v"];
+ svr -> evr [label="lambda_v svr"];
+ evr -> ivr [label="sigma_v evr"];
+ svr -> muerte_v [label="(mu_v+u) svr"];
+ evr -> muerte_v [label="(mu_v+u) evr"];
+ ivr -> muerte_v [label="(mu_v+u) ivr"];
+ ivr -> eh [style=dashed,label="lambda_h=b beta_h m ivr"];
+ ih -> evr [style=dashed,label="lambda_v=b beta_v ih"];
+}

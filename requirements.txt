@@ -1,0 +1,5 @@
+# Dependencias Python de los scripts de simulación y análisis LHS/PRCC.
+# Graphviz y el toolchain LHS/PRCC se instalan por separado (ver Dockerfile).
+numpy
+scipy
+matplotlib
