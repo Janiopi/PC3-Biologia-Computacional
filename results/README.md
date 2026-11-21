@@ -8,3 +8,5 @@
 - `historicos_dengue/prcc_original/`: archivos antes llamados `mnt_user-data_outputs_resultados_prcc_prcc_original_prcc.000N`, renombrados a `prcc.000N`.
 
 Se conserva la separación de procedencias: los archivos históricos no se han combinado con la corrida actual. Las nuevas ejecuciones deben realizarse en carpetas nuevas dentro de `work/`.
+
+- `dengue_corregido_20261120/`: matriz LHS, modelo y registros de la ejecución corregida que respalda los entregables finales.

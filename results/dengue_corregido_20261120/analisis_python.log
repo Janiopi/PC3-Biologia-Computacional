@@ -1,0 +1,19 @@
+Software: 999 corridas, 9 parametros, 74 tiempos (0..365 d)
+
+== Trayectorias: maxima diferencia absoluta software (RK4, h=0.05) vs scipy (LSODA) ==
+  ih: 4.99e-07   ivr: 5.00e-07   ch: 5.00e-06   R0: 5.00e-06
+
+== PRCC: maxima diferencia absoluta frente al calculo independiente en Python ==
+  (todos los parametros y tiempos)       prcc del software
+  ih: PRCC sobre datos redondeados idénticos: 4.93035e-07
+  ih  : 0.005
+  ivr: PRCC sobre datos redondeados idénticos: 4.97488e-07
+  ivr : 0.005
+  ch: PRCC sobre datos redondeados idénticos: 4.99406e-07
+  ch  : 0.000
+
+== PRCC de outcomes escalares (Python) ==
+  Acumulado a 365 días (n=999): b=+0.87, u=-0.82, beta_h=+0.81
+  Pico de infectados (n=999): b=+0.74, gamma_h=-0.68, u=-0.65
+  Día del pico (pico > 2Ih(0), interior) (n=569): b=-0.80, u=+0.75, beta_h=-0.73
+  R0 (n=999): b=+0.88, u=-0.83, beta_h=+0.81

@@ -1,0 +1,3 @@
+outcome 1: máximo |PRCC_original-PRCC_fix| = 0.004239
+outcome 2: máximo |PRCC_original-PRCC_fix| = 0.017534
+outcome 3: máximo |PRCC_original-PRCC_fix| = 0.127563

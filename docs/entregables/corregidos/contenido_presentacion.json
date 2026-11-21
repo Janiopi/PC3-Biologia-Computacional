@@ -1,0 +1,138 @@
+[
+  {
+    "title": "Dengue humano-mosquito con control vectorial",
+    "body": "Modelo SEIR-SEI. Análisis de incertidumbre y sensibilidad LHS/PRCC.\nBiología Computacional, noviembre de 2026.\nEquipo de dos integrantes: nombres y datos académicos pendientes de proporcionar."
+  },
+  {
+    "title": "Problema y pregunta",
+    "body": "¿Qué parámetros determinan el acumulado, la intensidad y el momento de una epidemia en este modelo de dengue?\nModelo académico, sin calibración con un brote real. No se utiliza una cifra nacional cuya fuente directa no se haya confirmado."
+  },
+  {
+    "title": "Modelo causal",
+    "body": "Bucle reforzador: Ih aumenta las infecciones del vector; Ev progresa a Iv; Iv aumenta las exposiciones humanas; Eh progresa a Ih.\nBucles compensadores: las infecciones consumen susceptibles humanos y vectoriales; la recuperación reduce Ih.\nEl control u aumenta la mortalidad del vector. Las incubaciones introducen retardos."
+  },
+  {
+    "title": "Modelo dinámico: niveles y flujos",
+    "body": "Humanos: Sh → Eh → Ih → Rh. Flujos: λh Sh, σh Eh, γh Ih. Nacimientos μh hacia Sh y muertes μh por nivel.\nVector: Sv → Ev → Iv. Flujos: λv Sv, σv Ev; reclutamiento μv y mortalidad (μv+u) por nivel.\nCh es un contador con entrada independiente σh Eh; no desvía personas de Ih.\nλh=b βh m Iv; λv=b βv Ih."
+  },
+  {
+    "title": "Sistema de ecuaciones",
+    "body": "Sh′=μh−λh Sh−μh Sh\nEh′=λh Sh−(σh+μh)Eh\nIh′=σh Eh−(γh+μh)Ih\nRh′=γh Ih−μh Rh; Ch′=σh Eh\nSv′=μv−λv Sv−(μv+u)Sv\nEv′=λv Sv−(σv+μv+u)Ev\nIv′=σv Ev−(μv+u)Iv"
+  },
+  {
+    "title": "Condiciones iniciales y parámetros",
+    "body": "Sh(0)=0.999; Ih(0)=0.001; Sv(0)=1. Los demás niveles empiezan en cero. μh=0.0000391/día.\nParámetro: nominal [mínimo, máximo]\nb: 0.6 [0.3,1]; βh: 0.4 [0.1,0.75]; βv: 0.7 [0.5,1]\nσh: 0.1667 [0.1,0.25]; γh: 0.2 [0.0714,0.3333]\nσv: 0.1 [0.0667,0.1538]; μv: 0.0714 [0.033,0.288]\nm: 3 [1,5]; u: 0.05 [0,0.15]. Tasas en día⁻¹; βh, βv y m adimensionales."
+  },
+  {
+    "title": "Número reproductivo con control",
+    "body": "R0² = b² βh βv m σh σv μv / [(γh+μh)(σh+μh)(μv+u)²(σv+μv+u)].\nEn el equilibrio libre de enfermedad, Sv*=μv/(μv+u). Este factor faltaba en la versión anterior.\nR0 nominal corregido: 1.82. El umbral se refiere al equilibrio, mientras que la simulación empieza con Sv=1."
+  },
+  {
+    "title": "Solución nominal y verificación",
+    "body": "365 días; RK4 con h=0.05. Verificación LSODA con tolerancias estrictas.\nPico humano: 6.65 % alrededor del día 112. Acumulado a 365 días: 93.36 %.\nDiferencias máximas de trayectorias sobre las 999 muestras: Ih e Iv ≈5×10⁻⁷; Ch ≈5×10⁻⁶.\nEl acumulado excluye los infecciosos iniciales y puede superar 1 por la renovación demográfica; no es una probabilidad individual."
+  },
+  {
+    "title": "Diseño LHS y definición de outcomes",
+    "body": "999 muestras uniformes en los rangos declarados; semilla 20261118. Python reutiliza la matriz del curso.\nOutcomes: Ih(t), Iv(t), Ch(t), Ch(365), máximo de Ih, día del máximo y R0.\nDía del pico: solo máximo >2Ih(0) e interior al horizonte. Quedan 569 corridas; 35 corridas tienen su máximo observado al día 365 y se reportan como pendientes de pico interior."
+  },
+  {
+    "title": "Incertidumbre",
+    "body": "R0: mediana 1.25; percentiles 5–95: 0.43–3.61.\nR0>1 en 62.9 % de las muestras.\nMediana de Ch(365): 57.7 %. Las bandas representan incertidumbre paramétrica bajo estos rangos, no intervalos de predicción calibrados."
+  },
+  {
+    "title": "PRCC del acumulado a 365 días",
+    "body": "Mayor asociación positiva: b, βh y m. Mayor asociación negativa: u, γh y μv.\nPRCC depende del rango y controla linealmente los otros parámetros en escala de rangos. Un valor pequeño no demuestra irrelevancia biológica.",
+    "chart": {
+      "categories": [
+        "b",
+        "beta_h",
+        "beta_v",
+        "sigma_h",
+        "gamma_h",
+        "sigma_v",
+        "mu_v",
+        "m",
+        "u"
+      ],
+      "values": [
+        0.8722,
+        0.8095,
+        0.4063,
+        0.0027,
+        -0.7167,
+        0.3683,
+        -0.7078,
+        0.7425,
+        -0.8228
+      ]
+    }
+  },
+  {
+    "title": "PRCC del pico y su momento",
+    "body": "Los coeficientes del día del pico se refieren solo a las 569 corridas seleccionadas. No generalizar al conjunto completo.\nLos valores p son nominales, sin ajuste por comparaciones múltiples.\nLa selección por existencia de un pico limita la interpretación causal.",
+    "chart": {
+      "categories": [
+        "b",
+        "beta_h",
+        "beta_v",
+        "sigma_h",
+        "gamma_h",
+        "sigma_v",
+        "mu_v",
+        "m",
+        "u"
+      ],
+      "values": [
+        0.7392,
+        0.6188,
+        0.2506,
+        0.0585,
+        -0.6856,
+        0.2599,
+        -0.4237,
+        0.5554,
+        -0.6469
+      ]
+    }
+  },
+  {
+    "title": "PRCC del día del pico y monotonía",
+    "body": "Ih(t) puede cruzar trayectorias: más transmisión puede adelantar la epidemia y reducir la prevalencia tardía. Un PRCC pequeño no equivale necesariamente a menor influencia.\nSe incluyen dispersiones por rangos para todos los parámetros y outcomes, y para Ih en días 60, 120 y 240. Las relaciones temporales deben interpretarse con esta limitación.",
+    "chart": {
+      "categories": [
+        "b",
+        "beta_h",
+        "beta_v",
+        "sigma_h",
+        "gamma_h",
+        "sigma_v",
+        "mu_v",
+        "m",
+        "u"
+      ],
+      "values": [
+        -0.8014,
+        -0.7275,
+        -0.4623,
+        -0.2041,
+        0.505,
+        -0.3648,
+        0.5738,
+        -0.6993,
+        0.7472
+      ]
+    }
+  },
+  {
+    "title": "Comparación controlada de intervenciones",
+    "body": "Otros parámetros fijos en sus nominales.\nu=0: pico 14.49 %, día 67; Ch(365)=1.0011.\nu=0.05: pico 6.65 %, día 112; Ch(365)=0.9336.\nu=0.15: máximo inicial 0.1 %, sin pico epidémico interior; Ch(365)=0.00451.\nEn estos escenarios el control reduce la transmisión; el control alto evita el pico interior, por lo que no corresponde afirmar que siempre lo retrasa."
+  },
+  {
+    "title": "Limitaciones y conclusiones",
+    "body": "Modelo homogéneo de un serotipo, sin calibración, estacionalidad, asintomáticos ni estructura espacial. Los rangos son escenarios, no estimaciones locales.\nLa mortalidad adicional y los límites de mortalidad natural incluyen decisiones propias. La uniformidad de tasas no implica uniformidad de duraciones.\nSe resuelve el sistema y se identifica sensibilidad global bajo los rangos elegidos. Los resultados no predicen un brote concreto."
+  },
+  {
+    "title": "Fuentes y reproducción",
+    "body": "Esteva y Vargas (1998), DOI 10.1016/S0025-5564(98)10003-2: antecedente estructural.\nMarino et al. (2008), DOI 10.1016/j.jtbi.2008.04.011: LHS/PRCC.\nAndraud et al. (2012), DOI 10.1371/journal.pone.0049085.\nChan y Johansson (2012), DOI 10.1371/journal.pone.0050972.\nBrady et al. (2013), DOI 10.1186/1756-3305-6-351.\nMarini et al. (2019), DOI 10.1371/journal.pcbi.1006831.\nLa trazabilidad exacta de cada límite sigue pendiente de cotejo bibliográfico; se conservan como supuestos de análisis, sin afirmar validación local."
+  }
+]

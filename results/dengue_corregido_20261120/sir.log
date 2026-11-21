@@ -1,0 +1,22 @@
+[1/4] Traduciendo el modelo a C (teval1)...
+Creating temp1.c 
+[2/4] Compilando con gcc (misma lista de fuentes que crun)...
+[3/4] Resolviendo las EDOs (y las corridas LHS si hay $lhs)...
+rm: cannot remove 'output1.pdf': No such file or directory
+File output1.pdf created!
+Solving run 99 
+Solving run 100 
+##  0.000000 seconds 
+[4/4] Calculando PRCC con: /usr/local/bin/prcc_fix
+      prcc 3: OK
+
+Listo. Resultados en: /work/mejora_20261120/out_ejemplo_sir
+  contour.pdf
+  contour.ps
+  output1.pdf
+  prccvals.pdf
+  prccvals.ps
+  signif.pdf
+  signif.ps
+  stats.pdf
+  stats.ps

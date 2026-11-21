@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 PARAMS = ['b', 'beta_h', 'beta_v', 'sigma_h', 'gamma_h', 'sigma_v', 'mu_v', 'm', 'u']
 STATES = ['sh', 'eh', 'ih', 'rh', 'ch', 'svr', 'evr', 'ivr']
-NOMINAL = [0.6, 0.5, 0.5, 0.1667, 0.2, 0.1, 0.0714, 2.5, 0.02]
+NOMINAL = [0.6, 0.4, 0.7, 0.1667, 0.2, 0.1, 0.0714, 3.0, 0.05]
 Y0 = np.array([0.999, 0, 0.001, 0, 0, 1, 0, 0])
 MU_H = 0.0000391
 
@@ -54,7 +54,7 @@ def validate(p, solution):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('salida', type=Path)
-    parser.add_argument('--u', type=float, default=0.02)
+    parser.add_argument('--u', type=float, default=0.05)
     args = parser.parse_args()
     if not np.isfinite(args.u) or args.u < 0:
         parser.error('--u debe ser finito y no negativo')

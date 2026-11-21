@@ -65,7 +65,7 @@ def rhs(t, y, b, bh, bv, sh_, gh, sv_, mv, m, u):
             sv_ * evr - (mv + u) * ivr]
 
 def R0f(b, bh, bv, sh_, gh, sv_, mv, m, u):
-    return np.sqrt(b * b * bh * bv * m * sh_ * sv_ /
+    return np.sqrt(b * b * bh * bv * m * sh_ * sv_ * mv / (mv + u) /
                    ((gh + MU_H) * (sh_ + MU_H) * (mv + u) * (sv_ + mv + u)))
 
 y0 = [0.999, 0, 0.001, 0, 0, 1, 0, 0]
@@ -73,6 +73,8 @@ tfine = np.arange(0, 365.0001, 1.0)
 IH = np.zeros((nsim, len(tfine))); IV = np.zeros_like(IH); CH = np.zeros_like(IH)
 for i in range(nsim):
     s = solve_ivp(rhs, (0, 365), y0, t_eval=tfine, args=tuple(X[i]), method="LSODA", rtol=1e-9, atol=1e-12)
+    if not s.success:
+        raise RuntimeError(s.message)
     IH[i], CH[i], IV[i] = s.y[2], s.y[4], s.y[7]
 R0 = np.array([R0f(*X[i]) for i in range(nsim)])
 
@@ -101,7 +103,10 @@ for k, nm in enumerate(names):
     sw_r = S[:, 8::2][:, :nvar]; sw_p = S[:, 9::2][:, :nvar]
     arr = {"ih": IH, "ivr": IV, "ch": CH}[nm]
     py_r = np.array([prcc(X, arr[:, int(round(t))])[0] for t in ts])
-    d_fix = np.abs(py_r - sw_r).max()
+    rounded_r = np.array([prcc(X, SW[:, np.argmin(np.abs(tgrid - t)), k + 1])[0] for t in ts])
+    same_data_error = np.nanmax(np.abs(rounded_r - sw_r))
+    print(f"  {nm}: PRCC sobre datos redondeados idénticos: {same_data_error:.6g}")
+    d_fix = np.nanmax(np.abs(py_r - sw_r))
     if have_orig:
         So = read_prcc(os.path.join(orig_dir, f"prcc.000{k+1}"))
         d_orig = np.abs(py_r - So[:, 8::2][:, :nvar]).max()
@@ -113,11 +118,11 @@ for k, nm in enumerate(names):
 # ------------------------------------------------------------------ outcomes escalares
 peak = IH.max(axis=1)
 tpk = tfine[IH.argmax(axis=1)]
-epi = R0 > 1.0
+epi = (peak > 2 * y0[2]) & (tpk > 0) & (tpk < 365)
 fin = CH[:, -1]
-out_sc = {"Tamaño final (casos acumulados)": (fin, np.ones(nsim, bool)),
+out_sc = {"Acumulado a 365 días": (fin, np.ones(nsim, bool)),
           "Pico de infectados": (peak, np.ones(nsim, bool)),
-          "Día del pico (solo R0>1)": (tpk, epi),
+          "Día del pico (pico > 2Ih(0), interior)": (tpk, epi),
           "R0": (R0, np.ones(nsim, bool))}
 res_sc = {}
 print("\n== PRCC de outcomes escalares (Python) ==")
@@ -162,7 +167,7 @@ fig.suptitle("PRCC calculado con el software del curso (prcc con reinicio de emp
 fig.tight_layout(rect=(0, 0.06, 1, 1)); fig.savefig(os.path.join(FIG, "fig2_prcc_tiempo.png"), dpi=150); plt.close(fig)
 
 # ------------------------------------------------------------------ FIGURA 3: PRCC de outcomes escalares (barras)
-sel = ["Tamaño final (casos acumulados)", "Pico de infectados", "Día del pico (solo R0>1)"]
+sel = ["Acumulado a 365 días", "Pico de infectados", "Día del pico (pico > 2Ih(0), interior)"]
 fig, ax = plt.subplots(1, 3, figsize=(14, 3.9), sharey=True)
 for a, nm in zip(ax, sel):
     r, p, n = res_sc[nm]

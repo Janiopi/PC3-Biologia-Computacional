@@ -21,14 +21,14 @@ ivr = 0.0;       // infecciosos
 
 // ---- Parametros con rango LHS:  nombre = nominal min min max $U;
 b       = 0.6      0.3      0.3      1.0      $U;   // picaduras por mosquito por dia
-beta_h  = 0.5      0.2      0.2      0.75     $U;   // prob. transmision mosquito -> humano
-beta_v  = 0.5      0.2      0.2      0.75     $U;   // prob. transmision humano -> mosquito
-sigma_h = 0.1667   0.1429   0.1429   0.25     $U;   // 1/incubacion intrinseca (1/dia)
-gamma_h = 0.2      0.1429   0.1429   0.3333   $U;   // 1/periodo infeccioso humano (1/dia)
-sigma_v = 0.1      0.0714   0.0714   0.1667   $U;   // 1/incubacion extrinseca (1/dia)
-mu_v    = 0.0714   0.0476   0.0476   0.1429   $U;   // mortalidad natural del mosquito (1/dia)
-m       = 2.5      1.0      1.0      4.0      $U;   // mosquitos por humano
-u       = 0.02     0.0      0.0      0.05     $U;   // mortalidad extra por control vectorial (1/dia)
+beta_h  = 0.4      0.1      0.1      0.75     $U;   // prob. transmision mosquito -> humano
+beta_v  = 0.7      0.5      0.5      1.0     $U;   // prob. transmision humano -> mosquito
+sigma_h = 0.1667   0.10     0.10     0.25     $U;   // 1/incubacion intrinseca (1/dia)
+gamma_h = 0.2      0.0714   0.0714   0.3333   $U;   // 1/periodo infeccioso humano (1/dia)
+sigma_v = 0.1      0.0667   0.0667   0.1538   $U;   // 1/incubacion extrinseca (1/dia)
+mu_v    = 0.0714   0.033    0.033    0.288   $U;   // mortalidad natural del mosquito (1/dia)
+m       = 3.0      1.0      1.0      5.0      $U;   // mosquitos por humano
+u       = 0.05     0.0      0.0      0.15     $U;   // mortalidad extra por control vectorial (1/dia)
 
 $Equations
 
@@ -38,7 +38,7 @@ mu_h = 0.0000391;          // mortalidad/natalidad humana = 1/(70*365)
 // ---- Auxiliares
 lam_h = b*beta_h*m*ivr;    // fuerza de infeccion sobre humanos susceptibles
 lam_v = b*beta_v*ih;       // fuerza de infeccion sobre mosquitos susceptibles
-R0 = sqrt( (b*b*beta_h*beta_v*m*sigma_h*sigma_v) /
+R0 = sqrt( (b*b*beta_h*beta_v*m*sigma_h*sigma_v*mu_v/(mu_v+u)) /
      ((gamma_h+mu_h)*(sigma_h+mu_h)*(mu_v+u)*(sigma_v+mu_v+u)) );
 
 // ---- Humanos

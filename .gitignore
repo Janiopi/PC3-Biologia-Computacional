@@ -13,3 +13,7 @@ work/
 .DS_Store
 *~
 *.swp
+
+# Archivos temporales de compilación y generación de presentaciones
+/build/
+.chart-data-*/
